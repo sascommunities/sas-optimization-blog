@@ -19,5 +19,5 @@ Search for "solveBlackbox" in SAS Optimization set at https://go.documentation.s
 
 ## More...
 
-You can visit the OR Blog with title "Improving Hidden Markov Models with Black-Box Optimization" for more details.
+You can visit the OR Blog with title "[Improving Hidden Markov Models with Black-Box Optimization](https://blogs.sas.com/content/operations/2020/08/10/improving-hidden-markov-models-with-black-box-optimization/)" for more details.
 
