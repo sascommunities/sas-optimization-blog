@@ -1,6 +1,6 @@
 # Animal Shelter Workforce Optimization
 
-This folder contains two SAS programs that create the data and run the optimization model for the Animal Shelter Workforce Optimization problem described in the Operations Research blog post ["Workforce Scheduling at an Animal Shelter."](www.sas.com) 
+This folder contains two SAS programs that create the data and run the optimization model for the Animal Shelter Workforce Optimization problem described in the Operations Research blog post "[Workforce Scheduling at an Animal Shelter](https://blogs.sas.com/content/operations/)." 
 
 To run the code, follow these steps: 
 1. Open and run the file called `aso_create_data.sas`, which creates four input data sets in your WORK library.
