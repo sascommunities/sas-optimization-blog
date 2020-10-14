@@ -202,7 +202,7 @@ for {g in GRADES, b in BLOCKS} AssignGrBl[g, b].priority=3;
 for {g in GRADES, r in ROOMS} AssignGrRm[g, r].priority=2;
 for {g in GRADES, r in ROOMS, b in BLOCKS} AssignGrRmBl[g, r, b].priority=1;
 
-        solve obj TotalStudentsHours with milp / maxtime=60 loglevel=BASIC relobjgap=0.01 priority=true nodesel=depth
+        solve obj TotalStudentsHours with milp / maxtime=60 loglevel=3 relobjgap=0.01 priority=true nodesel=depth
                                                heuristics=none symmetry=none probe=none;  
 end;
 
@@ -217,7 +217,7 @@ for {g in GRADES, b in BLOCKS} AssignGrBl[g, b].priority=3;
 for {g in GRADES, r in ROOMS} AssignGrRm[g, r].priority=2;
 for {g in GRADES, r in ROOMS, b in BLOCKS} AssignGrRmBl[g, r, b].priority=1;
 
-        solve obj TotalStudentsHours with milp / maxtime=60 loglevel=NONE relobjgap=0.01 heuristics=none symmetry=none probe=none
+        solve obj TotalStudentsHours with milp / maxtime=60 loglevel=3 relobjgap=0.01 heuristics=none symmetry=none probe=none
                                                  priority=true nodesel=depth
                                                  ;
 /* Cleaning step - before primalin */
@@ -233,7 +233,7 @@ for {g in GRADES, b in BLOCKS} ConsecutiveGrBl[g, b] = round(ConsecutiveGrBl[g, 
                     do;
                     primary_objective_value=TotalStudentsHours.sol;
                     restore PrimaryObjConstraint;
-                    solve obj RoomChanges with milp / primalin maxtime=60 loglevel=NONE relobjgap=0.01;
+                    solve obj RoomChanges with milp / primalin maxtime=60 loglevel=3 relobjgap=0.01;
             end;
     end;
 end;
