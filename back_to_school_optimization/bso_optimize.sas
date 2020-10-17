@@ -175,7 +175,7 @@ proc cas;
       drop NoRoomChanges;
       drop PrimaryObjConstraint;
 
-      solve obj TotalStudentsHours with milp / primalin maxtime=300 loglevel=3 relobjgap=0.01;;  
+      solve obj TotalStudentsHours with milp / maxtime=300 loglevel=3 relobjgap=0.01;;  
    end;
 
    if &plan_num. = 4 then do;
@@ -186,7 +186,7 @@ proc cas;
         drop NoRoomChanges;
       end;
 
-      solve obj TotalStudentsHours with milp / primalin maxtime=300 loglevel=3 relobjgap=0.01;;
+      solve obj TotalStudentsHours with milp / maxtime=300 loglevel=3 relobjgap=0.01;;
 
       /* Cleaning step - before primalin */
       for {g in GRADES, r in ROOMS, b in BLOCKS} AssignGrRmBl[g, r, b] = round(AssignGrRmBl[g, r, b]);
