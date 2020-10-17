@@ -64,5 +64,3 @@ School1                       Wed       3   1
 School1                       Thu       4   1
 School1                       Fri       5   1
 ;
-
-
