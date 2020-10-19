@@ -140,7 +140,7 @@ proc cas;
    /* If grade g is assigned to block b-1 and also assigned to block b, force ConsecutiveGrBl[g, b] to be 0. 
       If grade g is not assigned to block b-1 and also not assigned to block b, force ConsecutiveGrBl[g, b] to be 0.
       If grade g is assigned to block b-1 and is not assigned to block b, force ConsecutiveGrBl[g, b] to be 0. */
-   con ConsAddCuts {g in GRADES, b in BLOCKS}:
+   con ConsAddCuts {g in GRADES, b in 2..card(BLOCKS)}:
      ConsecutiveGrBl[g, b] <= AssignGrBl[g, b];
 
    con ConsAddCuts1 {g in GRADES, b in 2..card(BLOCKS)}:
@@ -172,10 +172,11 @@ proc cas;
       drop ConsPattern;
       drop ConsPatternRes;
       drop ConsAddCuts;
+      drop ConsAddCuts1;
       drop NoRoomChanges;
       drop PrimaryObjConstraint;
 
-      solve obj TotalStudentsHours with milp / primalin maxtime=300 loglevel=3 relobjgap=0.01;;  
+      solve obj TotalStudentsHours with milp / maxtime=300 loglevel=3 relobjgap=0.01;  
    end;
 
    if &plan_num. = 4 then do;
@@ -186,7 +187,7 @@ proc cas;
         drop NoRoomChanges;
       end;
 
-      solve obj TotalStudentsHours with milp / primalin maxtime=300 loglevel=3 relobjgap=0.01;;
+      solve obj TotalStudentsHours with milp / maxtime=300 loglevel=3 relobjgap=0.01;;
 
       /* Cleaning step - before primalin */
       for {g in GRADES, r in ROOMS, b in BLOCKS} AssignGrRmBl[g, r, b] = round(AssignGrRmBl[g, r, b]);
