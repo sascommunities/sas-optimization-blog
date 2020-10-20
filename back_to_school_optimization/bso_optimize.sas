@@ -12,12 +12,12 @@ data &caslib.._tmp_grades_in_block / single = yes;
    set &caslib..input_school_data;
    by School_Name population;
    if first.School_Name then do;
-    cum_population = population;
-    grade_count = 1;
+      cum_population = population;
+      grade_count = 1;
    end;
    else do;
-    cum_population + population;
-    grade_count+1;
+      cum_population + population;
+      grade_count+1;
    end; 
    keep School_Name grade population cum_population grade_count;
 run;
@@ -28,7 +28,7 @@ proc fedsql sessref=&cas_session.;
    from
    (
    select a.School_Name, a.cum_population, a.grade_count, b.tot_capacity
-    from
+      from
       (select School_Name, cum_population, grade_count from &caslib.._tmp_grades_in_block)a
       inner join
       (select School_Name, sum(capacity) as tot_capacity from &caslib..input_room_data group by School_Name)b
@@ -41,14 +41,14 @@ quit;
 /* defining macro variables */
 %let virtual_percent = 0;
 %let transition_window = 1;
-%let plan_num = 3; /*plan_num=2 : Students in each grade attends full day school , full week, once every n weeks;
+%let plan_num = 3;   /*plan_num=2 : Students in each grade attends full day school , full week, once every n weeks;
                      plan_num=3 : Students in each grade attends full day school, n days in a week;
                      plan_num=4 : Students in each grade attends n hours a day, everyday; */
 
 proc cas;
-  loadactionset 'optimization';
-  run;
-  source pgm;
+   loadactionset 'optimization';
+   run;
+   source pgm;
 
    /*************************************************/
    /* Define sets                                   */
@@ -65,9 +65,9 @@ proc cas;
    num capacity {ROOMS};
    num population {GRADES};
 
-  /*************************************************/
-  /* Read data                                     */
-  /*************************************************/
+   /*************************************************/
+   /* Read data                                     */
+   /*************************************************/
    read data &caslib..input_room_data into ROOMS=[roomID] capacity;
    read data &caslib..input_school_data into GRADES=[grade] population; 
    read data &caslib..input_block_data into BLOCKS=[block] block_id duration;
@@ -98,76 +98,78 @@ proc cas;
    /*************************************************/
    /* Constraints                                   */
    /*************************************************/
-        /********************  Room Capacity related constraints *******************/  
+   /******************** Room Capacity related constraints *******************/  
    /* Students assigned to a grade,block,room should not exceed the capacity the room. */
    con GradeRoomBlockAssignment {g in GRADES, r in ROOMS, b in BLOCKS}:
-     NumStudents[g, r, b] <= capacity[r] * AssignGrRmBl[g, r, b];
+      NumStudents[g, r, b] <= capacity[r] * AssignGrRmBl[g, r, b];
 
    /* Room/block assigned to a grade should be less than or equal to 1. - A room can be assigned to a max. of one grade in a time block */
    con RoomBlockAssignment {r in ROOMS, b in BLOCKS}:
-     sum {g in GRADES} AssignGrRmBl[g, r, b] <= 1;
+      sum {g in GRADES} AssignGrRmBl[g, r, b] <= 1;
 
-        /******************** Number of students constraints *******************/  
+   /******************** Number of students constraints *******************/  
    /* Number of students in a grade, block across all rooms should be equal to the population in that grade */
    con GradePop {g in GRADES, b in BLOCKS}:
-     sum {r in ROOMS} NumStudents[g, r, b] = (1 - (&virtual_percent. / 100)) * population[g] * AssignGrBl[g, b];
+      sum {r in ROOMS} NumStudents[g, r, b] = (1 - (&virtual_percent. / 100)) * population[g] * AssignGrBl[g, b];
 
-        /********************  Student Equality constraints ******************** /  
+   /******************** Student Equality constraints ******************** /  
    /* Computing average number students attending in a grade and Ensuring that the AvgNumStu is same across all grades*/
    con GradeAvg {g in GRADES}:  
-     sum {r in ROOMS, b in BLOCKS} NumStudents[g, r, b] / (card(BLOCKS)* population[g] * (1 - (&virtual_percent. / 100))) = AvgNumStudents;
+      sum {r in ROOMS, b in BLOCKS} NumStudents[g, r, b] / (card(BLOCKS)* population[g] * (1 - (&virtual_percent. / 100))) = AvgNumStudents;
 
-        /********************  Deriving Grade-Block and Grade-Room variables constraints ******************** /  
+   /******************** Deriving Grade-Block and Grade-Room variables constraints ******************** /  
    /* Deducing grade, block assignment from grade,block,room assignment. */
    con GradeBlockAssignment {g in GRADES, r in ROOMS, b in BLOCKS}:
-     AssignGrRmBl[g, r, b] <= AssignGrBl[g, b];
+      AssignGrRmBl[g, r, b] <= AssignGrBl[g, b];
 
    /* Deducing grade, room assignment from grade,block,room assignment. */
    con GradeRoomAssignment {g in GRADES, r in ROOMS, b in BLOCKS}:
-     AssignGrRmBl[g, r, b] <= AssignGrRm[g, r];
+      AssignGrRmBl[g, r, b] <= AssignGrRm[g, r];
 
-        /**************************** Constraints specific to Plan 4 *****************************/
+   /**************************** Constraints specific to Plan 4 *****************************/
    /* Constraint that ensures a grade is assigned only to continuous blocks */
    con ConsFirstBlock {g in GRADES}:
-     ConsecutiveGrBl[g, 1] = AssignGrBl[g, 1];
+      ConsecutiveGrBl[g, 1] = AssignGrBl[g, 1];
 
    con ConsPattern {g in GRADES, b in 2..card(BLOCKS)}:
-     ConsecutiveGrBl[g, b] >= AssignGrBl[g, b] - AssignGrBl[g, b-1];
+      ConsecutiveGrBl[g, b] >= AssignGrBl[g, b] - AssignGrBl[g, b-1];
 
    con ConsPatternRes {g in GRADES}:
-     sum {b in BLOCKS} ConsecutiveGrBl[g, b] <= 1;
+      sum {b in BLOCKS} ConsecutiveGrBl[g, b] <= 1;
 
-   /* If grade g is assigned to block b-1 and also assigned to block b, force ConsecutiveGrBl[g, b] to be 0. 
-      If grade g is not assigned to block b-1 and also not assigned to block b, force ConsecutiveGrBl[g, b] to be 0.
-      If grade g is assigned to block b-1 and is not assigned to block b, force ConsecutiveGrBl[g, b] to be 0. */
+   /* If grade g is assigned to block b-1 or if grade g is not assigned to block b, then force ConsecutiveGrBl[g, b] to be 0 */
    con ConsAddCuts {g in GRADES, b in 2..card(BLOCKS)}:
-     ConsecutiveGrBl[g, b] <= AssignGrBl[g, b];
+      ConsecutiveGrBl[g, b] <= AssignGrBl[g, b];
 
    con ConsAddCuts1 {g in GRADES, b in 2..card(BLOCKS)}:
-     ConsecutiveGrBl[g, b] <= 1 - AssignGrBl[g, b-1];
+      ConsecutiveGrBl[g, b] <= 1 - AssignGrBl[g, b-1];
 
    /* Breaks in between for cleaning */
-   con Breakconstraint {g in GRADES, b in (1+&transition_window.) ..card(BLOCKS)}:
-     sum {g1 in GRADES} AssignGrBl[g1, (b-&transition_window.)] <= maxGradesinBlock * (1 - ConsecutiveGrBl[g, b]);
+   con Breakconstraint {g in GRADES, g1 in GRADES, b in (1+&transition_window.) ..card(BLOCKS)}:
+      AssignGrBl[g1, (b-&transition_window.)] <= 1 - ConsecutiveGrBl[g, b];
+
+   con Breakconstraint1 {g in GRADES, b in (1+&transition_window.) ..card(BLOCKS)}:
+      sum {g1 in GRADES} AssignGrBl[g1, (b-&transition_window.)] <= maxGradesinBlock * (1 - ConsecutiveGrBl[g, b]);
 
    /* Constraint that ensures students assigned to a room r in a grade g does not change rooms */
    con NoRoomChanges {g in GRADES, r in ROOMS, b in BLOCKS}:
-     AssignGrRmBl[g, r, b] + 1 >= AssignGrBl[g, b] + AssignGrRm[g, r];
+      AssignGrRmBl[g, r, b] + 1 >= AssignGrBl[g, b] + AssignGrRm[g, r];
 
    con NoRoomChanges2 {g in GRADES, r in ROOMS, b in BLOCKS}:
-     AssignGrRmBl[g, r, b] <= NumStudents[g, r, b];
+      AssignGrRmBl[g, r, b] <= NumStudents[g, r, b];
 
    /* Constrain each of the objective functions to prevent worse solutions */
    num primary_objective_value init 0;
 
    con PrimaryObjConstraint:
-     sum {g in GRADES, r in ROOMS, b in BLOCKS} duration[b] * NumStudents[g, r, b] >= primary_objective_value; 
+      sum {g in GRADES, r in ROOMS, b in BLOCKS} duration[b] * NumStudents[g, r, b] >= primary_objective_value; 
 
    /*************************************************/
    /* Solve                                         */
    /*************************************************/
    if &plan_num. = 2 or &plan_num. = 3 then do;
       drop Breakconstraint;
+      drop Breakconstraint1;
       drop ConsFirstBlock;
       drop ConsPattern;
       drop ConsPatternRes;
@@ -176,18 +178,19 @@ proc cas;
       drop NoRoomChanges;
       drop PrimaryObjConstraint;
 
-      solve obj TotalStudentsHours with milp / maxtime=300 loglevel=3 relobjgap=0.01;  
+      solve obj TotalStudentsHours with milp / loglevel=3 relobjgap=0.01;  
    end;
 
    if &plan_num. = 4 then do;
       drop PrimaryObjConstraint;
 
       if &transition_window. = 0 then do;
-        drop Breakconstraint; 
-        drop NoRoomChanges;
+         drop Breakconstraint; 
+         drop Breakconstraint1;
+         drop NoRoomChanges;
       end;
 
-      solve obj TotalStudentsHours with milp / maxtime=300 loglevel=3 relobjgap=0.01;;
+      solve obj TotalStudentsHours with milp / loglevel=3 relobjgap=0.01;;
 
       /* Cleaning step - before primalin */
       for {g in GRADES, r in ROOMS, b in BLOCKS} AssignGrRmBl[g, r, b] = round(AssignGrRmBl[g, r, b]);
@@ -201,7 +204,7 @@ proc cas;
             do;
             primary_objective_value=TotalStudentsHours.sol;
             restore PrimaryObjConstraint;
-            solve obj RoomChanges with milp / primalin maxtime=300 loglevel=3 relobjgap=0.01;
+            solve obj RoomChanges with milp / primalin loglevel=3 relobjgap=0.01;
          end;
       end;
    end;
@@ -236,6 +239,6 @@ proc cas;
       totHoursStuWeek;
 
    endsource;
-     runOptmodel / code=pgm groupBy='School_Name' nGroupByTasks='ALL';
+      runOptmodel / code=pgm groupBy='School_Name' nGroupByTasks='ALL';
    run;
 quit;
