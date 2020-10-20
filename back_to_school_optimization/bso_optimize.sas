@@ -86,7 +86,7 @@ proc cas;
    /*************************************************/
    /* Constraints                                   */
    /*************************************************/
-   /******************** Room Capacity related constraints *******************/  
+   /********************* Room Capacity related constraints *********************/  
    /* Students assigned to a grade,block,room should not exceed the capacity the room. */
    con GradeRoomBlockAssignment {g in GRADES, r in ROOMS, b in BLOCKS}:
       NumStudents[g, r, b] <= capacity[r] * AssignGrRmBl[g, r, b];
@@ -95,17 +95,17 @@ proc cas;
    con RoomBlockAssignment {r in ROOMS, b in BLOCKS}:
       sum {g in GRADES} AssignGrRmBl[g, r, b] <= 1;
 
-   /******************** Number of students constraints *******************/  
+   /********************* Number of students constraints *********************/  
    /* Number of students in a grade, block across all rooms should be equal to the population in that grade */
    con GradePop {g in GRADES, b in BLOCKS}:
       sum {r in ROOMS} NumStudents[g, r, b] = (1 - (&virtual_percent. / 100)) * population[g] * AssignGrBl[g, b];
 
-   /******************** Student Equality constraints ******************** /  
+   /********************* Student Equality constraints *********************/  
    /* Computing average number students attending in a grade and Ensuring that the AvgNumStu is same across all grades*/
    con GradeAvg {g in GRADES}:  
       sum {r in ROOMS, b in BLOCKS} NumStudents[g, r, b] / (card(BLOCKS)* population[g] * (1 - (&virtual_percent. / 100))) = AvgNumStudents;
 
-   /******************** Deriving Grade-Block and Grade-Room variables constraints ******************** /  
+   /********************* Deriving Grade-Block and Grade-Room variables constraints **********************/  
    /* Deducing grade, block assignment from grade,block,room assignment. */
    con GradeBlockAssignment {g in GRADES, r in ROOMS, b in BLOCKS}:
       AssignGrRmBl[g, r, b] <= AssignGrBl[g, b];
@@ -114,7 +114,7 @@ proc cas;
    con GradeRoomAssignment {g in GRADES, r in ROOMS, b in BLOCKS}:
       AssignGrRmBl[g, r, b] <= AssignGrRm[g, r];
 
-   /**************************** Constraints specific to Plan 4 *****************************/
+   /********************* Constraints specific to Plan 4 *********************/
    /* Constraint that ensures a grade is assigned only to continuous blocks */
    con ConsFirstBlock {g in GRADES}:
       ConsecutiveGrBl[g, 1] = AssignGrBl[g, 1];
@@ -190,7 +190,7 @@ proc cas;
          /* Solve for secondary objective only if primary objective solve was successful */
          if _NSOL_ > 0 then
             do;
-            primary_objective_value=TotalStudentsHours.sol;
+            primary_objective_value = TotalStudentsHours.sol;
             restore PrimaryObjConstraint;
             solve obj RoomChanges with milp / primalin loglevel=3 relobjgap=0.01;
          end;
