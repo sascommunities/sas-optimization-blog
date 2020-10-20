@@ -8,7 +8,7 @@ proc casutil sessref=&cas_session outcaslib=&caslib;
 quit;
 
 /* compute the number of grades in a block */ 
-data &caslib.._tmp_grades_in_block / single = yes;
+data &caslib..output_grades_in_block / single = yes;
    set &caslib..input_school_data;
    by School_Name population;
    if first.School_Name then do;
@@ -21,22 +21,6 @@ data &caslib.._tmp_grades_in_block / single = yes;
    end; 
    keep School_Name grade population cum_population grade_count;
 run;
-
-proc fedsql sessref=&cas_session.;
-   create table &caslib..output_grades_in_block {options replace=true} as
-   select a.School_Name, max(grade_count) as grade_count
-   from
-   (
-   select a.School_Name, a.cum_population, a.grade_count, b.tot_capacity
-      from
-      (select School_Name, cum_population, grade_count from &caslib.._tmp_grades_in_block)a
-      inner join
-      (select School_Name, sum(capacity) as tot_capacity from &caslib..input_room_data group by School_Name)b
-      on a.School_Name = b.School_Name and a.cum_population <= b.tot_capacity
-   )a
-   group by a.School_Name
-;
-quit;
 
 /* defining macro variables */
 %let virtual_percent = 0;
@@ -83,8 +67,12 @@ proc cas;
    var ConsecutiveGrBl {GRADES, BLOCKS} binary; 
 
    /* Number of grades in a block */ 
-   num maxGradesinBlock;
-   read data &caslib..output_grades_in_block into maxGradesinBlock = grade_count;
+   num totcapacity = sum {r in ROOMS} capacity[r];
+   num cum_population{GRADES};
+   num grade_count{GRADES};
+
+   read data &caslib..output_grades_in_block into [grade] cum_population grade_count;
+   num maxGradesinBlock = max {q in GRADES: cum_population[q] <= totcapacity} grade_count[q];
 
    /*************************************************/
    /* Objective Functions                           */
@@ -178,7 +166,7 @@ proc cas;
       drop NoRoomChanges;
       drop PrimaryObjConstraint;
 
-      solve obj TotalStudentsHours with milp / loglevel=3 relobjgap=0.01;  
+      solve obj TotalStudentsHours with milp / loglevel=3 relobjgap=0.01;
    end;
 
    if &plan_num. = 4 then do;
@@ -190,7 +178,7 @@ proc cas;
          drop NoRoomChanges;
       end;
 
-      solve obj TotalStudentsHours with milp / loglevel=3 relobjgap=0.01;;
+      solve obj TotalStudentsHours with milp / loglevel=3 relobjgap=0.01;
 
       /* Cleaning step - before primalin */
       for {g in GRADES, r in ROOMS, b in BLOCKS} AssignGrRmBl[g, r, b] = round(AssignGrRmBl[g, r, b]);
@@ -212,9 +200,9 @@ proc cas;
    /*************************************************/
    /* Create output data                            */
    /*************************************************/
-   num total_capacity = 6 * sum {r in ROOMS} capacity[r] ;
-   num total_population = sum {g in GRADES} population[g] ;
-   num StudentHoursDay = (TotalStudentsHours.sol * 6) / card(BLOCKS) ;
+   num total_capacity = 6 * sum {r in ROOMS} capacity[r];
+   num total_population = sum {g in GRADES} population[g];
+   num StudentHoursDay = (TotalStudentsHours.sol * 6) / card(BLOCKS);
    num AvgHoursPerStuWeek = (StudentHoursDay*5) / total_population;
    num totHoursStuWeek = (StudentHoursDay*5);
    num num_blocks_scen = card(BLOCKS);
@@ -239,6 +227,6 @@ proc cas;
       totHoursStuWeek;
 
    endsource;
-      runOptmodel / code=pgm groupBy='School_Name' nGroupByTasks='ALL';
+   runOptmodel / code=pgm groupBy='School_Name' nGroupByTasks='ALL';
    run;
 quit;
