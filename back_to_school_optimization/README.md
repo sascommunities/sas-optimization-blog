@@ -1,5 +1,5 @@
 # Back to School Optimization
-This folder contains two SAS programs that create the data and run the optimization model for the Back to School Optimization problem described in the Operations Research blog post "Back to School Optimization."
+This folder contains two SAS programs that create the data and run the optimization model for the Back to School Optimization problem described in the Operations Research blog post "[Back to School Optimization](https://blogs.sas.com/content/operations/2020/10/26/backtoschooloptimization/)."
 1. bso_create_data.sas: Program to create the three input data files - **INPUT_SCHOOL_DATA**, **INPUT_ROOM_DATA**, and **INPUT_BLOCK_DATA**. Note that the **INPUT_BLOCK_DATA** is for weekly rotation scenario. 
 2. bso_optimize.sas: Program to read the input files and run the optimization model 
 
