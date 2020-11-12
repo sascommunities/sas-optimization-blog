@@ -1,0 +1,13 @@
+digraph G {
+outputorder="edgesfirst"; layout=sfdp; overlap=prism; overlap_scaling=-5; labelloc="t"; fontsize=30
+node[colorscheme=set19,style=filled]
+"anarchism"[label= "anarchism"]
+"european"[label= "european"]
+"the_donald"[label= "the_donald"]
+"anarchism" -> "european"[label= "1"]
+"anarchism" -> "the_donald"[label= "-1"]
+"european" -> "anarchism"[label= "-1"]
+"european" -> "the_donald"[label= "1"]
+"the_donald" -> "anarchism"[label= "1"]
+"the_donald" -> "european"[label= "-1"]
+}
