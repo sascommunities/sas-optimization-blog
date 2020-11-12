@@ -1,0 +1,59 @@
+graph G {
+outputorder="edgesfirst"; layout=sfdp; overlap=prism; overlap_scaling=-5; labelloc="t"; fontsize=30
+node[colorscheme=set19,style=filled]
+"104"[label= "Marine Corps Recruiting"]
+"5873"[label= "U.S. Navy"]
+"2612"[label= "United States Air Force"]
+"5596"[label= "U.S. Coast Guard"]
+"4855"[label= "U.S. Marine Corps"]
+"2625"[label= "Chief Minister Office\nUttar Pradesh"]
+"5784"[label= "Los Angeles District,\nU.S. Army Corps of\nEngineers"]
+"886"[label= "Honolulu District, U.S.\nArmy Corps of Engineers"]
+"2862"[label= "National Center for PTSD\n- U.S. Department of\nVeterans Affairs"]
+"6764"[label= "U.S. Army Training and\nDoctrine Command"]
+"104" -- "5873"
+"104" -- "2612"
+"104" -- "5596"
+"104" -- "4855"
+"104" -- "2625"
+"104" -- "5784"
+"104" -- "886"
+"5873" -- "886"
+"104" -- "2862"
+"104" -- "6764"
+"5873" -- "6764"
+"2612" -- "5873"
+"5596" -- "5873"
+"4855" -- "5873"
+"2625" -- "5873"
+"5784" -- "5873"
+"2862" -- "5873"
+"2612" -- "5596"
+"4855" -- "5596"
+"2625" -- "5596"
+"2862" -- "5596"
+"2612" -- "4855"
+"2625" -- "4855"
+"2862" -- "4855"
+"2612" -- "2625"
+"2612" -- "5784"
+"5596" -- "5784"
+"4855" -- "5784"
+"2625" -- "5784"
+"2862" -- "5784"
+"2612" -- "886"
+"5596" -- "886"
+"4855" -- "886"
+"2625" -- "886"
+"5784" -- "886"
+"2862" -- "886"
+"6764" -- "886"
+"2612" -- "2862"
+"2625" -- "2862"
+"2612" -- "6764"
+"5596" -- "6764"
+"4855" -- "6764"
+"2625" -- "6764"
+"5784" -- "6764"
+"2862" -- "6764"
+}
