@@ -1,0 +1,2 @@
+HOST=<your-server>
+PORT=<your-port>
